@@ -1,7 +1,4 @@
 # constants.py
-from geometry_utils import segments_intersect
-
-
 
 # Список с названиями образований
 FORMATION_LIST = (
@@ -50,9 +47,13 @@ FORMATION_LIST. FORMATION_LIST должен содержать только те
 v.
 """
 FORMATION_EXTENSIONS = {
-    'Пищевод нижняя треть': ['Вена'],
-    'Прямая кишка': ['Геморроидальный узел']
-}
+    'Пищевод нижняя треть': ['Вена', 'Метаплазия'],
+    'Прямая кишка': ['Геморроидальный узел'],
+    'Кардиальный отдел желудка': ['Атрофия', 'Метаплазия', 'Вена'],
+    'Тело желудка': ['Атрофия'],
+    'Антральный отдел желудка': ['Атрофия'],
+    'Пилорический отдел желудка': ['Атрофия']
+    }
 
 
 """
@@ -65,119 +66,3 @@ STATE = {
 }
 """
 
-
-class Application:
-    def __init__(self):
-        pass
-
-    def render_state(self):
-        pass
-
-
-class State(Application):
-    """
-    Класс состояния, описывающим имеющиеся локализации, образования
-    и комментарии.
-    """
-    def __init__(self):
-        """
-        Инициализация экземпляра класса. Экземпляр хранит переменные:
-        1. Словарь состояния (self.state), хранящий информацию для дальнейшего
-        рендеринга.
-        2. Множество использованных координат текстовых блоков для проверки
-        пересечений линий, соединяющих координату локализации и текстового
-        блока.
-        """
-        self.state = dict()
-        self.available_text_block_coord = TEXT_BLOCK_COORDINATES.copy()
-
-    def __str__(self):
-        return f'{self.state}'
-
-    def add_localisation(self, localisation):
-        """
-        Метод добавления локализации.
-        При добавлении новой локализации
-
-        Параметры:
-        - localisation (str): Название локализации в строгом соответствии со
-        словарем LOCALISATION_COORDINATES
-
-        """
-        self.state[localisation] = [LOCALISATION_COORDINATES[localisation],
-                                    self.available_text_block_coord.pop(),
-                                    dict()
-                                    ]
-        self._check_and_solve_intersections()
-
-    def add_formation(self, localisation, formation):
-        """
-        Метод добавления образования для конкретной локализации.
-
-        Параметры:
-        - localisation (str): Название локализации в соответствии со словарем
-        LOCALISATION_COORDINATES.
-        - formation (str): Название образования в соответствии со списком
-        FORMATION_LIST.
-        """
-        self.state[localisation][2].update({formation: [True, '']})
-
-    def _check_and_solve_intersections(self):
-        """
-        Приватный метод для поиска пересечений между координатами локализации
-        и текстового блока. Для выполнения использует импортируемую функцию
-        segment_intersect().
-        Принцип работы - проходит по словарю self.state, попарно оценивает
-        наличие пересечений между парами линий, соединяющих координату
-        локализации на рисунке и координату текстового блока. При наличии
-        таких пересечений проводит обмен значений координат текстового блока
-        между локализациями.
-        """
-        for i_key, i_item in self.state.items():
-            for j_key, j_item in self.state.items():
-                if i_item != j_item:
-                    seg1 = i_item[0:2]
-                    seg2 = j_item[0:2]
-                    if segments_intersect(seg1, seg2):
-                        print('Найдено пересечение')
-                        print(self.state)
-                        self.state[i_key][1], self.state[j_key][1] = self.state[j_key][1], self.state[i_key][1]
-                        print(self.state)
-
-    def add_comment(self, localisation, formation, comment):
-        self.state[localisation][2][formation][1] = comment
-
-    def delete_formation(self, localisation, formation):
-        self.state[localisation][2].pop(formation)
-
-    def delete_localisation(self, localisation):
-        self.state.pop(localisation)
-
-
-endo = State()
-
-endo.add_localisation('Тело желудка')
-print('!')
-
-endo.add_localisation('Слепая кишка')
-print('!')
-
-endo.add_localisation('Восходящая ободочная кишка')
-print('!')
-
-endo.add_localisation('Нисходящая ободочная кишка')
-print('!')
-
-endo.add_localisation('Поперечная ободочная кишка')
-print('!')
-
-endo.add_localisation('Пищевод нижняя треть')
-print('!')
-
-endo.add_localisation('Пищевод средняя треть')
-print('!')
-
-endo.add_formation('Пищевод средняя треть', 'Вена')
-endo.add_comment('Пищевод средняя треть', 'Вена', 'БОЛЬШАЯ ВЕНА')
-print("!!!")
-print(endo)
