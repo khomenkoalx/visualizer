@@ -44,21 +44,21 @@ pyinstaller --onefile --windowed --add-data "resources/Arial.ttf;resources" --ad
 ```
 
 ### 4. Структура проекта
-main.py - Главный файл приложения.
-drawing.py - Контроллер для работы с изображениями.
-state.py - Управление состоянием приложения.
-ui.py - Пользовательский интерфейс приложения.
-constants.py - Константы и конфигурации.
-resources/ - Папка с ресурсами (шрифты, изображения).
-    Arial.ttf - Обычный шрифт.
-    Arial-Bold.ttf - Полужирный шрифт.
-    digest.png - Изображение ЖКТ.
+main.py - Главный файл приложения.  
+drawing.py - Контроллер для работы с изображениями.  
+state.py - Управление состоянием приложения.  
+ui.py - Пользовательский интерфейс приложения.  
+constants.py - Константы и конфигурации.  
+resources/ - Папка с ресурсами (шрифты, изображения).  
+>-Arial.ttf - Обычный шрифт.  
+>-Arial-Bold.ttf - Полужирный шрифт.  
+>-digest.png - Изображение ЖКТ.  
 
 ### 5. Зависимости
-Python 3.12 \n
-Tkinter
-Pillow
-ReportLab
+Python 3.12  
+Tkinter  
+Pillow  
+ReportLab  
 PyInstaller
 
 ## 6. Как использовать
