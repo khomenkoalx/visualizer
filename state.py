@@ -1,43 +1,57 @@
 # state.py
+
+from typing import Dict, List, Optional, Tuple
 from constants import LOCALISATION_COORDINATES, TEXT_BLOCK_COORDINATES
+from pprint import pprint
+from geometry_utils import *
 
 class State:
     def __init__(self):
-        self.state = {}
-        self.available_text_block_coord = TEXT_BLOCK_COORDINATES.copy()
-        self.data = {}  # To store additional data like patient_info
+        self.state: Dict[str, Tuple[Tuple[int, int], Tuple[int, int], Dict[str, str]]] = {}
+        self.available_text_block_coord: List[Tuple[int, int]] = TEXT_BLOCK_COORDINATES.copy()
+        self.data: Dict[str, Optional[str]] = {}
 
-    def print_state(self):
-        # Печатает содержимое словаря state в удобочитаемом виде
-        from pprint import pprint
+    def print_state(self) -> None:
+        """Печатает содержимое словаря state в удобочитаемом виде"""
         pprint(self.state)
         pprint(self.get_patient_info())
         pprint(self.available_text_block_coord)
     
-    def get_patient_info(self):
-        patient_info = [self.data.get('patient_name'),
-                        self.data.get('patient_dob'), self.data.get('patient_id')]
+    def get_patient_info(self) -> List[Optional[str]]:
+        """Возвращает информацию о пациенте"""
+        patient_info: List[Optional[str]] = [
+            self.data.get('patient_name'),
+            self.data.get('patient_dob'),
+            self.data.get('patient_id')
+        ]
         return patient_info
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: str) -> None:
         self.data[key] = value
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Optional[str]:
         return self.data.get(key)
 
-    def add_patient_name(self, patient_name):
+    def add_patient_name(self, patient_name: str) -> None:
+        """Добавляет имя пациента"""
         self.data['patient_name'] = patient_name
 
-    def add_patient_dob(self, patient_dob):
+    def add_patient_dob(self, patient_dob: str) -> None:
+        """Добавляет дату рождения пациента"""
         self.data['patient_dob'] = patient_dob
 
-    def add_patient_id(self, patient_id):
+    def add_patient_id(self, patient_id: str) -> None:
+        """Добавляет номер истории болезни пациента"""
         self.data['patient_id'] = patient_id
 
-    def get_localisations(self):
-        return self.state.keys()
+    def get_localisations(self) -> List[str]:
+        """Возвращает список локализаций"""
+        return list(self.state.keys())
 
-    def add_localisation(self, localisation):
+    def add_localisation(self, localisation: str) -> None:
+        """Добавляет локализацию в состояние"""
+        if localisation not in LOCALISATION_COORDINATES:
+            raise ValueError(f"Локализация {localisation} не найдена в LOCALISATION_COORDINATES.")
         self.state[localisation] = [
             LOCALISATION_COORDINATES[localisation],
             self.available_text_block_coord.pop(),
@@ -46,67 +60,46 @@ class State:
         self._check_and_solve_intersections()
         print(f"Добавлена {localisation}")
 
-    def add_formation(self, localisation, formation):
-        self.state[localisation][2].update({formation: ''})
+    def add_formation(self, localisation: str, formation: str) -> None:
+        """Добавляет образование в указанную локализацию"""
+        if localisation not in self.state:
+            raise KeyError(f"Локализация {localisation} не найдена в состоянии.")
+        self.state[localisation][2][formation] = ''
         print(f"Добавлена {formation}")
 
-    def add_comment(self, localisation, formation, comment):
-        self.state[localisation][2][formation][1] = comment
+    def add_comment(self, localisation: str, formation: str, comment: str) -> None:
+        """Добавляет комментарий к образованию в указанной локализации"""
+        if localisation not in self.state:
+            raise KeyError(f"Локализация {localisation} не найдена в состоянии.")
+        if formation not in self.state[localisation][2]:
+            raise KeyError(f"Образование {formation} не найдено в локализации {localisation}.")
+        self.state[localisation][2][formation] = comment
         print(f"{localisation} и {formation} получили комментарий {comment}")
 
-    def delete_formation(self, localisation, formation):
+    def delete_formation(self, localisation: str, formation: str) -> None:
+        """Удаляет образование из указанной локализации"""
+        if localisation not in self.state:
+            raise KeyError(f"Локализация {localisation} не найдена в состоянии.")
+        if formation not in self.state[localisation][2]:
+            raise KeyError(f"Образование {formation} не найдено в локализации {localisation}.")
         self.state[localisation][2].pop(formation)
         print(f"Удалена {formation}")
 
-    def delete_localisation(self, localisation):
+    def delete_localisation(self, localisation: str) -> None:
+        """Удаляет локализацию из состояния"""
+        if localisation not in self.state:
+            raise KeyError(f"Локализация {localisation} не найдена в состоянии.")
         coords_for_return = self.state.pop(localisation)
         self.available_text_block_coord.append(coords_for_return[1])
         print(f"Удалена {localisation}")
 
-
-    def _check_and_solve_intersections(self):
+    def _check_and_solve_intersections(self) -> None:
+        """Проверяет пересечения между локализациями и решает их"""
         for i_key, i_item in self.state.items():
             for j_key, j_item in self.state.items():
-                if i_item != j_item:
+                if i_key != j_key:
                     seg1 = i_item[0:2]
                     seg2 = j_item[0:2]
                     if segments_intersect(seg1, seg2):
                         print('Найдено пересечение')
                         self.state[i_key][1], self.state[j_key][1] = self.state[j_key][1], self.state[i_key][1]
-
-def orientation(p, q, r):
-    val = (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1])
-    if val == 0:
-        return 0  # Коллинеарные
-    elif val > 0:
-        return 1  # По часовой стрелке
-    else:
-        return 2  # Против часовой стрелки
-
-def on_segment(p, q, r):
-    if min(p[0], q[0]) <= r[0] <= max(p[0], q[0]) and min(p[1], q[1]) <= r[1] <= max(p[1], q[1]):
-        return True
-    return False
-
-def segments_intersect(seg1, seg2):
-    p1, q1 = seg1
-    p2, q2 = seg2
-
-    o1 = orientation(p1, q1, p2)
-    o2 = orientation(p1, q1, q2)
-    o3 = orientation(p2, q2, p1)
-    o4 = orientation(p2, q2, q1)
-
-    if o1 != o2 and o3 != o4:
-        return True
-
-    if o1 == 0 and on_segment(p1, q1, p2):
-        return True
-    if o2 == 0 and on_segment(p1, q1, q2):
-        return True
-    if o3 == 0 and on_segment(p2, q2, p1):
-        return True
-    if o4 == 0 and on_segment(p2, q2, q1):
-        return True
-
-    return False

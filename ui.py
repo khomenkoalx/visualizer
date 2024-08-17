@@ -3,12 +3,6 @@ import tkinter as tk
 from tkinter import ttk, Label
 from constants import *
 
-def update_image_decorator(func):
-    def wrapper(self, *args, **kwargs):
-        result = func(self, *args, **kwargs)  # Выполнение оригинальной функции
-        self.drawing_controller.update_image()  # Вызов обновления изображения
-        return result
-    return wrapper
 
 class UI:
     def __init__(self, root, state, drawing_controller):
@@ -19,33 +13,33 @@ class UI:
         self.block_row_counter = 1
 
     def create_ui(self, root):
-        frame = ttk.Frame(root, padding="10")
-        frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        self.frame = ttk.Frame(root, padding="10")
+        self.frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
         #Диагностическая кнопка
-        state_button = ttk.Button(frame, text="Состояние", command=self.state.print_state)
+        state_button = ttk.Button(self.frame, text="Состояние", command=self.state.print_state)
         state_button.grid(row=0, column=0, columnspan=3, pady=10)
 
         self.state["patient_info"] = {}
 
-        self.state["patient_info"]["patient_name"] = self.create_entry(frame, "Ф.И.О.:", 1, "name")
-        self.state["patient_info"]["patient_dob"] = self.create_entry(frame, "Дата рождения:", 2, "dob")
-        self.state["patient_info"]["patient_id"] = self.create_entry(frame, "Номер истории болезни:", 3, "history_id")
+        self.state["patient_info"]["patient_name"] = self.create_entry(self.frame, "Ф.И.О.:", 1, "name")
+        self.state["patient_info"]["patient_dob"] = self.create_entry(self.frame, "Дата рождения:", 2, "dob")
+        self.state["patient_info"]["patient_id"] = self.create_entry(self.frame, "Номер истории болезни:", 3, "history_id")
         
         # Добавляем блок для выбора протокола
-        self.state['protocol_label'] = ttk.Label(frame, text="Выберите протокол:")
+        self.state['protocol_label'] = ttk.Label(self.frame, text="Выберите протокол:")
         self.state['protocol_label'].grid(row=4, column=0, padx=5, pady=5)
         
-        self.state["protocol_combobox"] = ttk.Combobox(frame, values=["ФЭГДС", "ФКС"])
+        self.state["protocol_combobox"] = ttk.Combobox(self.frame, values=["ФЭГДС", "ФКС"])
         self.state["protocol_combobox"].grid(row=4, column=1, padx=5, pady=5)
         self.state["protocol_combobox"].bind("<<ComboboxSelected>>", self.update_localisation_combobox)
 
         # Создаем холст для блока контейнеров с вертикальным скроллбаром
-        self.canvas = tk.Canvas(frame, height=450)
-        self.canvas.grid(row=6, column=0, columnspan=5, sticky=tk.NSEW)
+        self.canvas = tk.Canvas(self.frame, height=450)
+        self.canvas.grid(row=7, column=0, columnspan=5, sticky=tk.NSEW)
 
-        self.scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.canvas.yview)
-        self.scrollbar.grid(row=6, column=5, sticky=tk.NS)
+        self.scrollbar = ttk.Scrollbar(self.frame, orient="vertical", command=self.canvas.yview)
+        self.scrollbar.grid(row=7, column=5, sticky=tk.NS)
 
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
 
@@ -59,8 +53,8 @@ class UI:
         # Добавляем контейнер в холст
         self.canvas.create_window((0, 0), window=self.blocks_container, anchor="nw")
 
-        export_button = ttk.Button(frame, text="Экспорт в PDF", command=self.drawing_controller.export_to_pdf)
-        export_button.grid(row=5, column=0, columnspan=3, pady=10)
+        export_button = ttk.Button(root, text="Экспорт в PDF", command=lambda: self.drawing_controller.export_to_pdf())
+        export_button.grid(row=5, column=1, columnspan=3, pady=10)
 
         self.state["image_label"] = Label(root)
         self.state["image_label"].grid(row=0, column=1, padx=10, pady=10)
@@ -81,11 +75,11 @@ class UI:
         self.state['protocol_label'].grid_forget()
 
         # Обновляем label и создаем новый комбобокс для локализаций
-        self.localisation_label = ttk.Label(self.blocks_container, text="Локализация:")
-        self.localisation_label.grid(row=0, column=0, padx=5, pady=5)
+        self.localisation_label = ttk.Label(self.frame, text="Локализация:")
+        self.localisation_label.grid(row=6, column=0, padx=5, pady=5)
 
-        self.state["localisation_combobox"] = ttk.Combobox(self.blocks_container, values=localisation_values)
-        self.state["localisation_combobox"].grid(row=0, column=1, padx=5, pady=5)
+        self.state["localisation_combobox"] = ttk.Combobox(self.frame, values=localisation_values, state='readonly')
+        self.state["localisation_combobox"].grid(row=6, column=1, padx=5, pady=5)
         self.state["localisation_combobox"].bind("<<ComboboxSelected>>", self.create_new_block)
 
     def create_new_block(self, event):
@@ -98,7 +92,7 @@ class UI:
         
         # Создаем новый блок на основе выбранного значения
         loc_label = ttk.Label(self.blocks_container, text=f"{selected_value}:")
-        loc_label.grid(row=self.block_row_counter, column=1, padx=5, pady=5)
+        loc_label.grid(row=self.block_row_counter, column=0, padx=5, pady=5)
 
         # Создаем кнопку удаления блока
         delete_button = ttk.Button(self.blocks_container, text="Удалить", command=lambda: self.delete_block(selected_value))
@@ -167,11 +161,12 @@ class UI:
         self.blocks[selected_value]['loc_label'].grid_forget()
         self.blocks[selected_value]['delete_button'].grid_forget()
         
+
         # Удаление блока из состояния
         self.state.delete_localisation(selected_value)
         del self.blocks[selected_value]
         self.drawing_controller.update_image()
-
+        
     def create_entry(self, frame, label_text, row, data_type):
         label = ttk.Label(frame, text=label_text)
         label.grid(row=row, column=0, padx=5, pady=5)
@@ -209,3 +204,4 @@ class UI:
         self.state["blocks_frame"].bind("<Configure>", lambda e: self.state["blocks_canvas"].configure(
             scrollregion=self.state["blocks_canvas"].bbox("all")
         ))
+

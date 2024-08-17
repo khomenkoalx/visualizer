@@ -1,17 +1,20 @@
 # drawing.py
 
-from PIL import Image, ImageDraw, ImageTk, ImageFont
-from tkinter import Label
-from constants import LOCALISATION_COORDINATES
+from PIL import Image, ImageTk, ImageDraw, ImageFont
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import landscape, A4
+import os
 import math
+import time
+from constants import OUTPUT_PATH, FONT_REGULAR, FONT_BOLD
 
 class DrawingController:
     def __init__(self, state, image_path):
         self.state = state
         self.image_path = image_path
         self.image = None
-        self.font = ImageFont.truetype("resourses/Arial.ttf", size=10)
-        self.font_bold = ImageFont.truetype("resourses/Arial-Bold.ttf", size=10)
+        self.font = ImageFont.truetype(FONT_REGULAR, size=10)
+        self.font_bold = ImageFont.truetype(FONT_BOLD, size=10)
 
     def update_image(self):
         # Загрузка изображения
@@ -60,20 +63,20 @@ class DrawingController:
         draw = ImageDraw.Draw(image)
         for localisation, (loc_coords, text_coords, formations) in self.state.state.items():
             text_coords_abs = (
-                text_coords[0],  # перевод относительных координат в абсолютные
+                text_coords[0] + 10 if text_coords[0] > 300 else text_coords[0] - 150, 
                 text_coords[1]
             )
             block_text = f"{localisation}"
-            for formation, (present, comment) in formations.items():
-                if present:
-                    block_text += f"\n- {formation} ({comment})"
+            for formation, comment in formations.items():
+                block_text += f"\n- {formation} ({comment})"
             draw.text(text_coords_abs, block_text, font=self.font_bold, fill="black")
+
 
     def arrow(self, start, end):
         """
         Вспомогательная функция для создания координат стрелки
         """
-        arrowhead_size = 10  # Размер наконечника стрелки
+        arrowhead_size = 0  # Размер наконечника стрелки
         angle = math.atan2(end[1] - start[1], end[0] - start[0]) + math.pi
 
         return [
@@ -89,9 +92,53 @@ class DrawingController:
         Метод добавления блока локализации.
         """
         # Здесь будет логика добавления нового блока.
-
     def export_to_pdf(self):
-        """
-        Метод экспорта изображения в PDF.
-        """
-        # Здесь будет логика экспорта изображения в PDF.
+        # Преобразование ImageTk.PhotoImage в Pillow Image
+        pil_image = ImageTk.getimage(self.image)
+
+        # Получаем текущую временную метку
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+
+        # Формируем имя файла с временной меткой
+        patient_info = self.state.get_patient_info()[0]
+        pdf_filename = f"{OUTPUT_PATH}/{patient_info}_{timestamp}.pdf"
+
+        # Создаем папку для результатов экспорта, если ее нет
+        os.makedirs(f"{OUTPUT_PATH}", exist_ok=True)
+
+        # Устанавливаем альбомную ориентацию страницы A4
+        page_width, page_height = landscape(A4)
+
+        # Создаем PDF-документ
+        c = canvas.Canvas(pdf_filename, pagesize=(page_width, page_height))
+
+        # Получаем размеры изображения
+        img_width, img_height = pil_image.size
+
+        # Рассчитываем коэффициент масштабирования для сохранения соотношения сторон
+        aspect_ratio = img_width / img_height
+        if img_width > page_width or img_height > page_height:
+            if img_width / page_width > img_height / page_height:
+                img_width = page_width
+                img_height = page_width / aspect_ratio
+            else:
+                img_height = page_height
+                img_width = page_height * aspect_ratio
+
+        # Рассчитываем координаты для центрирования изображения на странице
+        x = (page_width - img_width) / 2
+        y = (page_height - img_height) / 2
+
+        # Сохраняем изображение во временный файл
+        temp_filename = "temp_image.png"
+        pil_image.save(temp_filename)
+
+        # Вставляем изображение в PDF с сохранением соотношения сторон
+        c.drawImage(temp_filename, x, y, width=img_width, height=img_height)
+
+        # Закрываем PDF-документ
+        c.save()
+
+        # Удаляем временный файл (опционально)
+        if os.path.exists(temp_filename):
+            os.remove(temp_filename)
