@@ -44,15 +44,17 @@ pyinstaller --onefile --windowed --add-data "resources/Arial.ttf;resources" --ad
 ```
 
 ### 4. Структура проекта
-main.py - Главный файл приложения.  
-drawing.py - Контроллер для работы с изображениями.  
-state.py - Управление состоянием приложения.  
-ui.py - Пользовательский интерфейс приложения.  
-constants.py - Константы и конфигурации.  
-resources/ - Папка с ресурсами (шрифты, изображения).  
->-Arial.ttf - Обычный шрифт.  
->-Arial-Bold.ttf - Полужирный шрифт.  
->-digest.png - Изображение ЖКТ.  
+visualizer/
+├── main.py           # Основной файл запуска
+├── README.md         # Документация проекта
+├── requirements.txt  # Список зависимостей
+├── resources/        # Папка с ресурсами
+│   ├── Arial.ttf
+│   ├── Arial-Bold.ttf
+│   └── digest.png
+├── state.py          # Логика управления состоянием
+├── drawing.py        # Логика отрисовки изображения
+└── ui.py             # Логика пользовательского интерфейса
 
 ### 5. Зависимости
 Python 3.12  
