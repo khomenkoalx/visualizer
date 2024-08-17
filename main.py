@@ -5,7 +5,7 @@ from ui import UI
 
 def main():
     root = tk.Tk()
-    root.title("Image Editor")
+    root.title("Визуализация образований ЖКТ")
 
     # Создание объекта состояния
     state = State()
