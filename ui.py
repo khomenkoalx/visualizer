@@ -66,7 +66,7 @@ class UI:
         if protocol == "ФЭГДС":
             localisation_values = list(LOCALISATION_COORDINATES.keys())[0:8]
         elif protocol == "ФКС":
-            localisation_values = list(LOCALISATION_COORDINATES.keys())[9:15]
+            localisation_values = list(LOCALISATION_COORDINATES.keys())[8:15]
         else:
             return
 
