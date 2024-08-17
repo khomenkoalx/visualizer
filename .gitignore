@@ -2,4 +2,6 @@ venv/
 
 results/
 
+main.spec
+
 __pycache__

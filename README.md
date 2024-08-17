@@ -44,7 +44,7 @@ pyinstaller --onefile --windowed --add-data "resources/Arial.ttf;resources" --ad
 ```
 
 ### 4. Структура проекта
-visualizer/
+visualizer/  
 ├── main.py           # Основной файл запуска  
 ├── README.md         # Документация проекта  
 ├── requirements.txt  # Список зависимостей  
