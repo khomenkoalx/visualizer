@@ -45,16 +45,16 @@ pyinstaller --onefile --windowed --add-data "resources/Arial.ttf;resources" --ad
 
 ### 4. Структура проекта
 visualizer/
-├── main.py           # Основной файл запуска
-├── README.md         # Документация проекта
-├── requirements.txt  # Список зависимостей
-├── resources/        # Папка с ресурсами
-│   ├── Arial.ttf
-│   ├── Arial-Bold.ttf
-│   └── digest.png
-├── state.py          # Логика управления состоянием
-├── drawing.py        # Логика отрисовки изображения
-└── ui.py             # Логика пользовательского интерфейса
+├── main.py           # Основной файл запуска  
+├── README.md         # Документация проекта  
+├── requirements.txt  # Список зависимостей  
+├── resources/        # Папка с ресурсами  
+│   ├── Arial.ttf  
+│   ├── Arial-Bold.ttf  
+│   └── digest.png  
+├── state.py          # Логика управления состоянием  
+├── drawing.py        # Логика отрисовки изображения  
+└── ui.py             # Логика пользовательского интерфейса  
 
 ### 5. Зависимости
 Python 3.12  
