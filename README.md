@@ -42,6 +42,7 @@ python main.py
 ```bash
 pyinstaller --onefile --windowed --add-data "resources/Arial.ttf;resources" --add-data "resources/Arial-Bold.ttf;resources" --add-data "resources/digest.png;resources" main.py
 ```
+После сборки исполняемого файла перенесите папку resources в директорию с файлом main.py
 
 ### 4. Структура проекта
 visualizer/  

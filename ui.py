@@ -17,8 +17,8 @@ class UI:
         self.frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
         #Диагностическая кнопка
-        state_button = ttk.Button(self.frame, text="Состояние", command=self.state.print_state)
-        state_button.grid(row=0, column=0, columnspan=3, pady=10)
+        #state_button = ttk.Button(self.frame, text="Состояние", command=self.state.print_state)
+        #state_button.grid(row=0, column=0, columnspan=3, pady=10)
 
         self.state["patient_info"] = {}
 
